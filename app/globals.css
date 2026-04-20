@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #090d09;
+  --bg2: #0f1a0f;
+  --accent: #39ffb4;
+  --accent-dim: #1aff9a33;
+  --border: #39ffb433;
+  --text: #e8f5e8;
+  --muted: #6b8f6b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: "Courier New", Courier, monospace;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #090d09;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--accent);
+  font-family: "Courier New", Courier, monospace;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-outline:hover {
+  background: var(--accent-dim);
+}
+
+input[type="password"],
+input[type="text"] {
+  background: #0a140a;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: "Courier New", Courier, monospace;
+  outline: none;
+}
+
+input[type="password"]:focus,
+input[type="text"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+
+.recharts-text {
+  fill: var(--muted) !important;
+  font-family: "Courier New", Courier, monospace !important;
+  font-size: 11px !important;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--border) !important;
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: var(--bg2) !important;
+  border: 1px solid var(--border) !important;
+  font-family: "Courier New", Courier, monospace !important;
+  font-size: 12px !important;
+  color: var(--text) !important;
+}
