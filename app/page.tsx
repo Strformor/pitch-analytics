@@ -14,7 +14,7 @@ export default function LoginPage() {
     setError("");
 
     if (password === "OPS123") {
-      sessionStorage.setItem("sa_auth", "1");
+      localStorage.setItem("sa_auth", "1");
       router.push("/upload");
     } else {
       setError("INVALID PASSWORD. TRY AGAIN.");

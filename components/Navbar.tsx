@@ -7,13 +7,14 @@ export default function Navbar() {
   const router = useRouter();
 
   function handleLogout() {
-    sessionStorage.removeItem("sa_auth");
+    localStorage.removeItem("sa_auth");
     router.push("/");
   }
 
   const links = [
     { href: "/upload", label: "UPLOAD" },
     { href: "/insights", label: "INSIGHTS" },
+    { href: "/scout", label: "⚡ SCOUT" },
   ];
 
   return (
