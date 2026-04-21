@@ -31,6 +31,43 @@ function effLabel(v: number) {
   return '—'
 }
 
+// Role colour by position string (handles 'F','M','D' and full names)
+function posColor(pos: string) {
+  const p = (pos || '').toLowerCase()
+  if (p === 'gk' || p.includes('goalkeeper')) return '#a78bfa'
+  if (p === 'd'  || p.includes('defender'))   return '#60a5fa'
+  if (p === 'm'  || p.includes('midfielder')) return '#fbbf24'
+  return '#39ffb4' // FW / Attacker
+}
+
+// Role-based primary stats to show (given limited scout data)
+function scoutRoleStats(p: any) {
+  const pos = (p.position || '').toLowerCase()
+
+  if (pos === 'd' || pos.includes('defender')) {
+    return [
+      { label: 'APPS',    val: p.appearances ?? p.apps ?? '—' },
+      { label: 'G+A',     val: (p.goals ?? 0) + (p.assists ?? 0) },
+      { label: 'MINS',    val: p.minutes },
+    ]
+  }
+  if (pos === 'm' || pos.includes('midfielder')) {
+    return [
+      { label: 'ASSISTS', val: p.assists },
+      { label: 'GOALS',   val: p.goals },
+      { label: 'APPS',    val: p.appearances ?? p.apps ?? '—' },
+      { label: 'MINS',    val: p.minutes },
+    ]
+  }
+  // FW / default
+  return [
+    { label: 'GOALS',   val: p.goals },
+    { label: 'ASSISTS', val: p.assists },
+    { label: 'APPS',    val: p.appearances ?? p.apps ?? '—' },
+    { label: 'MINS',    val: p.minutes },
+  ]
+}
+
 export default function ScoutPage() {
   const { players: myPlayers } = useStore()
   const [season, setSeason] = useState<'2425' | '2526'>('2526')
@@ -276,7 +313,7 @@ export default function ScoutPage() {
                         cursor: 'pointer',
                         transition: 'all 0.15s',
                         position: 'relative',
-                        borderLeft: isSelected ? '3px solid var(--accent)' : '3px solid transparent',
+                        borderLeft: `3px solid ${isSelected ? 'var(--accent)' : posColor(p.position)}`,
                       }}
                       onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--bg3)' }}
                       onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'var(--bg2)' }}
@@ -285,7 +322,7 @@ export default function ScoutPage() {
                       <div style={{
                         position: 'absolute', top: 16, right: 16,
                         fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 28,
-                        letterSpacing: '-0.03em', color: 'var(--border-strong)', lineHeight: 1,
+                        letterSpacing: '-0.03em', color: 'rgba(255,255,255,0.04)', lineHeight: 1,
                       }}>
                         {String(i + 1).padStart(2, '0')}
                       </div>
@@ -293,7 +330,7 @@ export default function ScoutPage() {
                       {/* Player info */}
                       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 14, paddingRight: 40 }}>
                         {p.photo && (
-                          <img src={p.photo} alt={p.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: 'var(--bg3)', border: '1px solid var(--border)', flexShrink: 0 }}
+                          <img src={p.photo} alt={p.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: 'var(--bg3)', border: `2px solid ${posColor(p.position)}33`, flexShrink: 0 }}
                             onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
                         )}
                         <div>
@@ -307,31 +344,32 @@ export default function ScoutPage() {
                         </div>
                       </div>
 
-                      {/* Tags */}
-                      <div style={{ display: 'flex', gap: 4, marginBottom: 16, flexWrap: 'wrap' }}>
-                        {[p.position, p.age ? `${p.age}Y` : null, p.nationality].filter(Boolean).map(tag => (
+                      {/* Role badge + tags */}
+                      <div style={{ display: 'flex', gap: 4, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+                        {/* Role label */}
+                        {p.position && (
+                          <span style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '0.12em', padding: '2px 8px', background: `${posColor(p.position)}18`, border: `1px solid ${posColor(p.position)}44`, color: posColor(p.position) }}>
+                            {p.position === 'F' ? 'FWD' : p.position === 'M' ? 'MID' : p.position === 'D' ? 'DEF' : p.position?.slice(0, 3).toUpperCase()}
+                          </span>
+                        )}
+                        {[p.age ? `${p.age}Y` : null, p.nationality, p.league].filter(Boolean).map(tag => (
                           <span key={tag} style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '0.1em', padding: '2px 6px', border: '1px solid var(--border)', color: 'var(--text-dim)' }}>
                             {tag}
                           </span>
                         ))}
                       </div>
 
-                      {/* Main stats */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, marginBottom: 14, textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-                        {[
-                          { label: 'APPS', val: p.appearances ?? p.apps ?? '—' },
-                          { label: 'G', val: p.goals },
-                          { label: 'A', val: p.assists },
-                          { label: 'MIN', val: p.minutes },
-                        ].map(s => (
+                      {/* Role-based primary stats */}
+                      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${scoutRoleStats(p).length}, 1fr)`, gap: 4, marginBottom: 14, textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+                        {scoutRoleStats(p).map(s => (
                           <div key={s.label}>
-                            <div style={{ fontFamily: 'var(--mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '0.1em', marginBottom: 4 }}>{s.label}</div>
-                            <div style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 18, color: 'var(--text)', lineHeight: 1 }}>{s.val}</div>
+                            <div style={{ fontFamily: 'var(--mono)', fontSize: 8, color: posColor(p.position), letterSpacing: '0.1em', marginBottom: 4 }}>{s.label}</div>
+                            <div style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 18, color: 'var(--text)', lineHeight: 1 }}>{s.val ?? '—'}</div>
                           </div>
                         ))}
                       </div>
 
-                      {/* xG row (2526 only) */}
+                      {/* xG row (2526 only) — shown for forwards/midfielders */}
                       {p.xg !== undefined && (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, marginBottom: 14, textAlign: 'center', paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
                           {[

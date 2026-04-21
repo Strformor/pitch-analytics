@@ -3,9 +3,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const links = [
-  { href: "/upload", label: "Upload", num: "01" },
-  { href: "/insights", label: "Insights", num: "02" },
-  { href: "/scout", label: "Scout", num: "03" },
+  { href: "/upload",  label: "Upload",  num: "01" },
+  { href: "/insights",label: "Insights",num: "02" },
+  { href: "/scout",   label: "Scout",   num: "03" },
+  { href: "/league",  label: "League",  num: "04" },
 ];
 
 export default function Navbar() {
