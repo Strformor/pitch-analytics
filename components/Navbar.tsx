@@ -2,6 +2,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+const links = [
+  { href: "/upload", label: "Upload" },
+  { href: "/insights", label: "Insights" },
+  { href: "/scout", label: "Scout" },
+];
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -11,50 +17,96 @@ export default function Navbar() {
     router.push("/");
   }
 
-  const links = [
-    { href: "/upload", label: "UPLOAD" },
-    { href: "/insights", label: "INSIGHTS" },
-    { href: "/scout", label: "⚡ SCOUT" },
-  ];
-
   return (
-    <nav
-      className="flex items-center justify-between px-6 py-3 border-b"
-      style={{ background: "var(--bg2)", borderColor: "var(--border)" }}
-    >
-      <Link href="/upload" className="flex items-center gap-2">
-        <span
-          className="text-lg font-black tracking-widest"
-          style={{ color: "var(--accent)", textShadow: "0 0 10px #39ffb455" }}
-        >
-          ⚽ PITCH
-        </span>
-        <span className="text-xs tracking-widest hidden sm:block" style={{ color: "var(--muted)" }}>
-          ANALYTICS
+    <nav style={{
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
+      background: 'rgba(7,7,7,0.92)',
+      backdropFilter: 'blur(12px)',
+      borderBottom: '1px solid var(--border)',
+      padding: '0 24px',
+      display: 'flex',
+      alignItems: 'center',
+      height: 56,
+      gap: 32,
+    }}>
+      {/* Wordmark */}
+      <Link href="/upload" style={{
+        fontFamily: 'var(--sans)',
+        fontWeight: 700,
+        fontSize: 18,
+        letterSpacing: '-0.02em',
+        color: 'var(--text)',
+        textDecoration: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+      }}>
+        PITCH
+        <span style={{
+          fontFamily: 'var(--mono)',
+          fontSize: 8,
+          letterSpacing: '0.15em',
+          color: 'var(--accent)',
+          border: '1px solid var(--border)',
+          padding: '2px 6px',
+        }}>
+          2025/26
         </span>
       </Link>
 
-      <div className="flex items-center gap-1">
-        {links.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className="px-4 py-2 text-xs tracking-widest transition-colors"
-            style={{
-              color: pathname === href ? "var(--accent)" : "var(--muted)",
-              borderBottom: pathname === href ? "2px solid var(--accent)" : "2px solid transparent",
+      {/* Nav links */}
+      <div style={{ display: 'flex', gap: 0, flex: 1 }}>
+        {links.map(({ href, label }) => {
+          const active = pathname === href;
+          return (
+            <Link key={href} href={href} style={{
+              fontFamily: 'var(--mono)',
+              fontSize: 11,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              color: active ? 'var(--accent)' : 'var(--muted)',
+              textDecoration: 'none',
+              padding: '0 16px',
+              height: 56,
+              display: 'flex',
+              alignItems: 'center',
+              borderBottom: active ? '1px solid var(--accent)' : '1px solid transparent',
+              transition: 'color 0.15s',
             }}
-          >
-            {label}
-          </Link>
-        ))}
-        <button
-          onClick={handleLogout}
-          className="ml-4 px-3 py-1 text-xs tracking-widest btn-outline"
-        >
-          EXIT
-        </button>
+            onMouseEnter={e => !active && ((e.target as HTMLElement).style.color = 'var(--text-dim)')}
+            onMouseLeave={e => !active && ((e.target as HTMLElement).style.color = 'var(--muted)')}
+            >
+              {label}
+            </Link>
+          );
+        })}
       </div>
+
+      {/* Exit */}
+      <button onClick={handleLogout} style={{
+        fontFamily: 'var(--mono)',
+        fontSize: 10,
+        letterSpacing: '0.15em',
+        color: 'var(--muted)',
+        background: 'transparent',
+        border: '1px solid var(--border)',
+        padding: '6px 14px',
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+      }}
+      onMouseEnter={e => {
+        (e.target as HTMLElement).style.color = 'var(--text)'
+        ;(e.target as HTMLElement).style.borderColor = 'var(--border-strong)'
+      }}
+      onMouseLeave={e => {
+        (e.target as HTMLElement).style.color = 'var(--muted)'
+        ;(e.target as HTMLElement).style.borderColor = 'var(--border)'
+      }}
+      >
+        EXIT
+      </button>
     </nav>
   );
 }

@@ -12,91 +12,135 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     if (password === "OPS123") {
       localStorage.setItem("sa_auth", "1");
       router.push("/upload");
     } else {
-      setError("INVALID PASSWORD. TRY AGAIN.");
+      setError("ACCESS DENIED.");
       setLoading(false);
     }
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: "var(--bg)" }}
-    >
-      {/* Pixel field art strip at top */}
-      <div
-        className="fixed top-0 left-0 right-0 h-1"
-        style={{ background: "var(--accent)", opacity: 0.6 }}
-      />
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
+      {/* Top accent line */}
+      <div style={{ height: 1, background: "linear-gradient(90deg, var(--accent), transparent)" }} />
 
-      <div className="w-full max-w-md">
-        {/* Logo / Title */}
-        <div className="text-center mb-10">
-          <div
-            className="text-5xl font-black tracking-widest mb-2"
-            style={{ color: "var(--accent)", textShadow: "0 0 20px #39ffb466" }}
-          >
-            ⚽ PITCH
+      {/* Grid lines decoration */}
+      <div className="fixed inset-0 pointer-events-none" style={{
+        backgroundImage: `linear-gradient(rgba(57,255,180,0.03) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(57,255,180,0.03) 1px, transparent 1px)`,
+        backgroundSize: '80px 80px'
+      }} />
+
+      <div className="flex-1 flex flex-col items-center justify-center px-6 relative z-10">
+
+        {/* Big editorial wordmark */}
+        <div className="text-center mb-16 animate-fade-up">
+          <div style={{
+            fontFamily: 'var(--sans)',
+            fontSize: 'clamp(72px, 14vw, 160px)',
+            fontWeight: 700,
+            letterSpacing: '-0.03em',
+            lineHeight: 0.9,
+            color: 'var(--text)',
+          }}>
+            PITCH
           </div>
-          <div className="text-sm tracking-[0.4em] uppercase" style={{ color: "var(--muted)" }}>
-            Soccer Analytics Platform
+          <div className="flex items-center justify-center gap-4 mt-4">
+            <div style={{ height: 1, width: 40, background: 'var(--border-strong)' }} />
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.3em', color: 'var(--muted)' }}>
+              FOOTBALL INTELLIGENCE
+            </span>
+            <div style={{ height: 1, width: 40, background: 'var(--border-strong)' }} />
           </div>
-          <div
-            className="mt-4 h-px"
-            style={{ background: "var(--border)" }}
-          />
         </div>
 
-        {/* Login card */}
-        <div className="card p-8">
-          <h1
-            className="text-xs tracking-[0.3em] uppercase mb-6"
-            style={{ color: "var(--muted)" }}
-          >
-            [ SECURE ACCESS ]
-          </h1>
+        {/* Login form */}
+        <div className="w-full max-w-sm animate-fade-up" style={{ animationDelay: '0.1s' }}>
+          <div style={{
+            border: '1px solid var(--border)',
+            background: 'var(--bg2)',
+            padding: '32px',
+          }}>
+            <p style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--muted)', marginBottom: 24 }}>
+              [ SECURE ACCESS ]
+            </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label
-                className="block text-xs tracking-widest uppercase mb-2"
-                style={{ color: "var(--accent)" }}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div>
+                <label style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.15em', color: 'var(--accent)', display: 'block', marginBottom: 8 }}>
+                  ACCESS CODE
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '14px 16px',
+                    fontSize: 14,
+                    letterSpacing: '0.2em',
+                    background: 'var(--bg)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                    fontFamily: 'var(--mono)',
+                    outline: 'none',
+                  }}
+                  onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                  placeholder="········"
+                  autoFocus
+                />
+              </div>
+
+              {error && (
+                <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: '#ff5555', letterSpacing: '0.1em' }}>
+                  ✕ {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: 'var(--accent)',
+                  color: '#070707',
+                  fontFamily: 'var(--mono)',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  letterSpacing: '0.2em',
+                  border: 'none',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.6 : 1,
+                  transition: 'all 0.2s',
+                  marginTop: 8,
+                }}
+                onMouseEnter={e => !loading && ((e.target as HTMLElement).style.boxShadow = '0 0 24px var(--accent-glow)')}
+                onMouseLeave={e => ((e.target as HTMLElement).style.boxShadow = 'none')}
               >
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 text-sm tracking-widest"
-                placeholder="••••••••"
-                autoFocus
-              />
-            </div>
+                {loading ? 'VERIFYING...' : 'ENTER →'}
+              </button>
+            </form>
+          </div>
 
-            {error && (
-              <p className="text-xs tracking-widest" style={{ color: "#ff4d4d" }}>
-                ⚠ {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              className="btn-primary w-full py-3 text-sm tracking-widest mt-2"
-              disabled={loading}
-            >
-              {loading ? "VERIFYING..." : "ENTER"}
-            </button>
-          </form>
+          {/* Season badge */}
+          <div className="flex justify-between mt-4" style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--muted)', letterSpacing: '0.15em' }}>
+            <span>PITCH v2.0</span>
+            <span>SEASON 2025/26</span>
+          </div>
         </div>
+      </div>
 
-        <p className="text-center text-xs mt-6" style={{ color: "var(--muted)" }}>
-          PITCH v1.0 · SEASON ANALYTICS
-        </p>
+      {/* Bottom stats bar */}
+      <div style={{ borderTop: '1px solid var(--border)', padding: '12px 24px' }}>
+        <div className="flex justify-center gap-12" style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--muted)', letterSpacing: '0.1em' }}>
+          {['LIVE DATA', '9 LEAGUES', 'AI POWERED', 'SHARE READY'].map(label => (
+            <span key={label}>{label}</span>
+          ))}
+        </div>
       </div>
     </div>
   );
