@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     players.sort((a, b) => b.efficiency - a.efficiency)
 
     return NextResponse.json({ players, total: players.length })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Scout data unavailable. Try again shortly.' }, { status: 500 })
   }
 }

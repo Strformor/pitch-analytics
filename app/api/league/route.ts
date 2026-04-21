@@ -198,7 +198,7 @@ export async function GET(req: Request) {
       .sort((a, b) => (b.rating || 0) - (a.rating || 0))
 
     return NextResponse.json({ players, teamName: PL_TEAMS[teamId] })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'League data unavailable. Try again shortly.' }, { status: 500 })
   }
 }

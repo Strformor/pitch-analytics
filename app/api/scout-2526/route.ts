@@ -25,7 +25,10 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await query
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[scout-2526] query error:', error.code)
+    return NextResponse.json({ error: 'Data unavailable. Try again shortly.' }, { status: 500 })
+  }
 
   const players = (data || []).map((p) => ({
     ...p,

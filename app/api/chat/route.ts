@@ -3,57 +3,92 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+// Simple in-memory rate limiter (per serverless instance — not cross-instance,
+// but limits burst abuse within a single cold-start window)
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>()
+const RATE_LIMIT = 10      // max requests
+const WINDOW_MS  = 60_000  // per 60 seconds
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now - entry.windowStart > WINDOW_MS) {
+    rateLimitMap.set(ip, { count: 1, windowStart: now })
+    return false
+  }
+  entry.count++
+  return entry.count > RATE_LIMIT
+}
+
 export async function POST(request: NextRequest) {
+  // Rate limit by IP
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 })
+  }
+
+  // Body size guard — reject anything over 50 KB
+  const contentLength = request.headers.get('content-length')
+  if (contentLength && parseInt(contentLength) > 50_000) {
+    return NextResponse.json({ error: 'Request too large.' }, { status: 413 })
+  }
+
   try {
-    const { message, myPlayers, scoutedPlayers } = await request.json()
+    const body = await request.json()
+    const { message, myPlayers, scoutedPlayers } = body
+
+    // Input validation
+    if (!message || typeof message !== 'string') {
+      return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
+    }
+    const safeMessage = message.slice(0, 500) // cap user input
+    const safePlayers  = Array.isArray(myPlayers)      ? myPlayers.slice(0, 50)      : []
+    const safeScouts   = Array.isArray(scoutedPlayers) ? scoutedPlayers.slice(0, 50) : []
 
     if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === 'your-anthropic-api-key-here') {
       return NextResponse.json({
-        reply: '⚠️ AI chat requires an Anthropic API key. Add ANTHROPIC_API_KEY to your environment variables on Vercel to enable this feature.'
+        reply: '⚠️ AI chat requires an Anthropic API key. Add ANTHROPIC_API_KEY to your Vercel environment variables.'
       })
     }
 
-    const mySquadContext = myPlayers?.length
-      ? `MY CURRENT SQUAD:\n${myPlayers.map((p: any) =>
-          `- ${p.Name} | ${p.Position} | Age:${p.Age} | Apps:${p.Appearances} | G:${p.Goals} A:${p.Assists} | Mins:${p.MinutesPlayed} | Cards:${p.YellowCards}Y ${p.RedCards}R`
+    const mySquadContext = safePlayers.length
+      ? `MY CURRENT SQUAD:\n${safePlayers.map((p: any) =>
+          `- ${String(p.Name).slice(0,40)} | ${p.Position} | Age:${p.Age} | G:${p.Goals} A:${p.Assists} | Eff:${
+            p.MinutesPlayed > 0 ? (((p.Goals + p.Assists) / p.MinutesPlayed) * 90).toFixed(2) : '0.00'
+          } G+A/90`
         ).join('\n')}`
       : 'No squad uploaded yet.'
 
-    const scoutContext = scoutedPlayers?.length
-      ? `AVAILABLE PLAYERS (2025/26 Premier League):\n${scoutedPlayers.map((p: any) =>
-          `- ${p.name} | ${p.team} | ${p.position} | G:${p.goals} A:${p.assists} | xG:${p.xg} xA:${p.xa} | Eff:${p.efficiency} G+A/90`
+    const scoutContext = safeScouts.length
+      ? `SCOUTED PLAYERS:\n${safeScouts.map((p: any) =>
+          `- ${String(p.name).slice(0,40)} | ${p.team} | ${p.position} | G:${p.goals} A:${p.assists} | xG:${p.xg} xA:${p.xa}`
         ).join('\n')}`
       : 'No scouted players loaded.'
 
-    const systemPrompt = `You are an expert football scout and analyst for PITCH, a professional analytics platform. You are direct, insightful, and data-driven.
+    const systemPrompt = `You are an expert football scout and analyst for PITCH, a professional analytics platform. Be direct, data-driven, and concise.
 
 ${mySquadContext}
 
 ${scoutContext}
 
-Your job:
-1. Recommend players to SIGN based on position needs, efficiency, age, and value
-2. Identify players to SELL or MOVE ON from based on underperformance (low efficiency, high cards, age)
-3. Compare players head-to-head using stats
-4. Answer tactical questions about squad balance
-
 Rules:
 - Always cite specific stats (G+A/90, goals, assists, xG)
-- Be concise — 3-5 sentences max per response
-- Be bold with recommendations — don't hedge
-- Use football analytics language naturally (xG, pressing metrics, etc.)
-- If comparing, always declare a clear winner`
+- 3-5 sentences max per response
+- Be bold with recommendations — no hedging
+- Use football analytics language (xG, pressing, etc.)
+- If comparing players, declare a clear winner`
 
     const response = await client.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 400,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: message }],
+      model:      'claude-haiku-4-5',  // haiku: 50× cheaper than opus, fast, sufficient for this use case
+      max_tokens: 300,
+      system:     systemPrompt,
+      messages:   [{ role: 'user', content: safeMessage }],
     })
 
     const reply = response.content[0].type === 'text' ? response.content[0].text : ''
     return NextResponse.json({ reply })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch {
+    // Never leak internal error details to the client
+    return NextResponse.json({ error: 'Scout unavailable. Try again shortly.' }, { status: 500 })
   }
 }
