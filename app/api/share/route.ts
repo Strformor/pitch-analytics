@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseServer } from "@/lib/supabase-server";
 
 const MAX_PLAYERS = 100
 const MAX_LABEL_LEN = 120
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     ? label.slice(0, MAX_LABEL_LEN).replace(/[<>"']/g, '')
     : 'Unnamed Squad'
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from("snapshots")
     .insert({ players: players.slice(0, MAX_PLAYERS), label: safeLabel })
     .select("id")
