@@ -64,22 +64,23 @@ export default function AIChat({ scoutedPlayers }: { scoutedPlayers?: any[] }) {
         onClick={() => setOpen(!open)}
         style={{
           position: 'fixed',
-          bottom: 24,
-          right: 24,
+          bottom: 28,
+          right: 28,
           width: 52,
           height: 52,
-          borderRadius: '50%',
+          borderRadius: 0,
           background: open ? 'var(--bg2)' : 'var(--accent)',
-          border: open ? '1px solid var(--border-strong)' : 'none',
-          color: open ? 'var(--accent)' : '#070707',
-          fontSize: 20,
+          border: open ? '1px solid var(--border-strong)' : '2px solid var(--accent)',
+          color: open ? 'var(--accent)' : '#050505',
+          fontSize: open ? 18 : 22,
           cursor: 'pointer',
           zIndex: 1000,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: open ? 'none' : '0 0 20px var(--accent-glow)',
+          boxShadow: open ? 'none' : '0 0 32px var(--accent-glow)',
           transition: 'all 0.2s',
+          fontWeight: 700,
         }}
         title="AI Scout"
       >
@@ -90,27 +91,30 @@ export default function AIChat({ scoutedPlayers }: { scoutedPlayers?: any[] }) {
       {open && (
         <div style={{
           position: 'fixed',
-          bottom: 88,
-          right: 24,
-          width: 360,
-          maxHeight: 520,
+          bottom: 96,
+          right: 28,
+          width: 380,
+          maxHeight: 540,
           background: 'var(--bg2)',
           border: '1px solid var(--border-strong)',
+          borderBottom: '3px solid var(--accent)',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 999,
           animation: 'fadeUp 0.2s ease',
+          boxShadow: '0 0 60px rgba(0,0,0,0.6), 0 0 30px var(--accent-dim)',
         }}>
           {/* Header */}
           <div style={{
-            padding: '12px 16px',
+            padding: '14px 18px',
             borderBottom: '1px solid var(--border)',
+            background: 'var(--bg3)',
             display: 'flex',
             alignItems: 'center',
             gap: 8,
           }}>
-            <span style={{ color: 'var(--accent)', fontSize: 12 }}>⚡</span>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.15em', color: 'var(--text)' }}>
+            <div style={{ width: 3, height: 16, background: 'var(--accent)', flexShrink: 0 }} />
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.2em', color: 'var(--text)', fontWeight: 700 }}>
               AI SCOUT
             </span>
             {myPlayers.length > 0 && (

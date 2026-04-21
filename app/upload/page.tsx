@@ -15,6 +15,7 @@ export default function UploadPage() {
   const [error, setError] = useState("");
   const [preview, setPreview] = useState<Player[]>([]);
   const [currentFile, setCurrentFile] = useState("");
+  const [totalPlayers, setTotalPlayers] = useState(0);
 
   function parseFile(file: File) {
     setError("");
@@ -44,7 +45,8 @@ export default function UploadPage() {
           return;
         }
         setPlayers(rows);
-        setPreview(rows.slice(0, 5));
+        setTotalPlayers(rows.length);
+        setPreview(rows.slice(0, 8));
       },
       error() {
         setError("Failed to parse CSV file.");
@@ -68,118 +70,224 @@ export default function UploadPage() {
     }
   }
 
+  const hasData = preview.length > 0;
+
   return (
     <AuthGuard>
-      <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
         <Navbar />
 
-        <main className="flex-1 p-6 max-w-4xl mx-auto w-full">
-          <h1 className="text-xs tracking-[0.3em] uppercase mb-6" style={{ color: "var(--muted)" }}>
-            [ DATA UPLOAD ]
-          </h1>
+        <div style={{ flex: 1, display: "grid", gridTemplateColumns: hasData ? "260px 1fr" : "1fr", transition: "all 0.3s" }}>
 
-          {/* Drop zone */}
-          <div
-            className="card p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-colors"
-            style={{
-              borderColor: dragging ? "var(--accent)" : "var(--border)",
-              background: dragging ? "var(--accent-dim)" : "var(--bg2)",
-              minHeight: 260,
-            }}
-            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={handleDrop}
-            onClick={() => inputRef.current?.click()}
-          >
-            <input
-              ref={inputRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <div className="text-5xl mb-4" style={{ color: "var(--accent)" }}>
-              {dragging ? "⬇" : "📂"}
-            </div>
-            <p className="text-sm tracking-widest uppercase mb-2" style={{ color: "var(--accent)" }}>
-              {currentFile || "Drop CSV here or click to browse"}
-            </p>
-            <p className="text-xs" style={{ color: "var(--muted)" }}>
-              Supports: PlayerID, Name, Position, Age, Nationality, Appearances, Goals, Assists, YellowCards, RedCards, MinutesPlayed
-            </p>
-          </div>
-
-          {error && (
-            <p className="mt-4 text-xs tracking-widest" style={{ color: "#ff4d4d" }}>
-              ⚠ {error}
-            </p>
-          )}
-
-          {/* Preview table */}
-          {preview.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-xs tracking-widest uppercase mb-3" style={{ color: "var(--muted)" }}>
-                Preview ({preview.length} of {preview.length} rows shown)
-              </h2>
-              <div className="card overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                      {["Name", "Position", "Age", "Appearances", "Goals", "Assists", "Cards"].map((h) => (
-                        <th
-                          key={h}
-                          className="px-3 py-2 text-left tracking-widest uppercase"
-                          style={{ color: "var(--accent)" }}
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {preview.map((p) => (
-                      <tr
-                        key={p.PlayerID}
-                        style={{ borderBottom: "1px solid var(--border)" }}
-                      >
-                        <td className="px-3 py-2" style={{ color: "var(--text)" }}>{p.Name}</td>
-                        <td className="px-3 py-2" style={{ color: "var(--muted)" }}>{p.Position}</td>
-                        <td className="px-3 py-2" style={{ color: "var(--muted)" }}>{p.Age}</td>
-                        <td className="px-3 py-2" style={{ color: "var(--muted)" }}>{p.Appearances}</td>
-                        <td className="px-3 py-2" style={{ color: "var(--accent)" }}>{p.Goals}</td>
-                        <td className="px-3 py-2" style={{ color: "var(--muted)" }}>{p.Assists}</td>
-                        <td className="px-3 py-2" style={{ color: "var(--muted)" }}>
-                          {p.YellowCards}Y / {p.RedCards}R
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {/* Sidebar — visible when data loaded */}
+          {hasData && (
+            <div style={{
+              borderRight: "1px solid var(--border)",
+              padding: "40px 28px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 32,
+              animation: "fadeIn 0.4s ease",
+            }}>
+              {/* Vertical label */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                <div style={{ width: 2, height: 40, background: "var(--accent)" }} />
+                <div>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.25em", color: "var(--muted)", textTransform: "uppercase" }}>Squad Loaded</div>
+                  <div style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: 32, letterSpacing: "-0.03em", color: "var(--accent)", lineHeight: 1.1, marginTop: 4 }}>{totalPlayers}</div>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.15em", color: "var(--muted)" }}>PLAYERS</div>
+                </div>
               </div>
 
-              <div className="mt-6 flex gap-3">
+              {/* File name */}
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 20 }}>
+                <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.2em", color: "var(--muted)", marginBottom: 6 }}>FILE</div>
+                <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", wordBreak: "break-all" }}>{currentFile}</div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: "auto" }}>
                 <button
-                  className="btn-primary px-8 py-3 text-sm tracking-widest"
+                  className="btn-primary"
                   onClick={() => router.push("/insights")}
+                  style={{ padding: "14px 20px", fontSize: 11, letterSpacing: "0.15em", textAlign: "center" }}
                 >
                   VIEW INSIGHTS →
                 </button>
                 <button
-                  className="btn-outline px-6 py-3 text-sm tracking-widest"
+                  className="btn-outline"
                   onClick={() => {
                     setPreview([]);
                     setCurrentFile("");
+                    setTotalPlayers(0);
                     setPlayers([]);
                     setFileName("");
                     if (inputRef.current) inputRef.current.value = "";
                   }}
+                  style={{ padding: "12px 20px", fontSize: 11, letterSpacing: "0.15em", textAlign: "center" }}
                 >
                   CLEAR
                 </button>
               </div>
             </div>
           )}
-        </main>
+
+          {/* Main area */}
+          <div style={{ padding: "40px 40px 80px", display: "flex", flexDirection: "column", gap: 32 }}>
+
+            {/* Page header */}
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.3em", color: "var(--muted)", marginBottom: 6 }}>01 / DATA INPUT</div>
+                <div style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: 36, letterSpacing: "-0.03em", color: "var(--text)", lineHeight: 1 }}>
+                  Upload Squad
+                </div>
+              </div>
+              {!hasData && (
+                <span style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.15em", color: "var(--muted)" }}>
+                  CSV · DRAG & DROP OR CLICK
+                </span>
+              )}
+            </div>
+
+            <div style={{ height: 1, background: "linear-gradient(90deg, var(--accent) 0%, transparent 60%)" }} />
+
+            {!hasData ? (
+              /* Drop zone — full page feel */
+              <div
+                onClick={() => inputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={handleDrop}
+                style={{
+                  flex: 1,
+                  minHeight: 400,
+                  border: `1px solid ${dragging ? "var(--accent)" : "var(--border)"}`,
+                  background: dragging ? "var(--accent-dim)" : "var(--bg2)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Corner marks */}
+                {["top-left", "top-right", "bottom-left", "bottom-right"].map(corner => (
+                  <div key={corner} style={{
+                    position: "absolute",
+                    width: 20, height: 20,
+                    ...(corner.includes("top") ? { top: 12 } : { bottom: 12 }),
+                    ...(corner.includes("left") ? { left: 12 } : { right: 12 }),
+                    borderTop: corner.includes("top") ? `2px solid ${dragging ? "var(--accent)" : "var(--border-strong)"}` : "none",
+                    borderBottom: corner.includes("bottom") ? `2px solid ${dragging ? "var(--accent)" : "var(--border-strong)"}` : "none",
+                    borderLeft: corner.includes("left") ? `2px solid ${dragging ? "var(--accent)" : "var(--border-strong)"}` : "none",
+                    borderRight: corner.includes("right") ? `2px solid ${dragging ? "var(--accent)" : "var(--border-strong)"}` : "none",
+                  }} />
+                ))}
+
+                <input ref={inputRef} type="file" accept=".csv" style={{ display: "none" }} onChange={handleFileChange} />
+
+                {/* Icon */}
+                <div style={{
+                  width: 72, height: 72,
+                  border: `1px solid ${dragging ? "var(--accent)" : "var(--border-strong)"}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  marginBottom: 28,
+                  fontSize: 28,
+                  background: dragging ? "var(--accent-dim)" : "transparent",
+                  transition: "all 0.2s",
+                }}>
+                  {dragging ? "⬇" : "◈"}
+                </div>
+
+                <div style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: 28, letterSpacing: "-0.02em", color: dragging ? "var(--accent)" : "var(--text)", marginBottom: 12 }}>
+                  {dragging ? "Release to upload" : "Drop your CSV here"}
+                </div>
+
+                <div style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.15em", color: "var(--muted)", textAlign: "center", maxWidth: 480, lineHeight: 1.8 }}>
+                  Required columns: PlayerID · Name · Position · Age · Nationality<br />
+                  Appearances · Goals · Assists · YellowCards · RedCards · MinutesPlayed
+                </div>
+
+                <div style={{ marginTop: 28, fontFamily: "var(--mono)", fontSize: 10, letterSpacing: "0.15em", color: "var(--accent)", border: "1px solid var(--border-strong)", padding: "8px 20px" }}>
+                  OR CLICK TO BROWSE
+                </div>
+              </div>
+            ) : (
+              /* Preview table */
+              <div style={{ animation: "fadeUp 0.4s ease" }}>
+                <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.25em", color: "var(--muted)", marginBottom: 16 }}>
+                  SHOWING FIRST {preview.length} PLAYERS
+                </div>
+
+                <div style={{ border: "1px solid var(--border)", overflow: "hidden" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "var(--mono)" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--bg3)" }}>
+                        {["#", "Name", "Pos", "Age", "Apps", "Goals", "Assists", "Cards"].map((h) => (
+                          <th key={h} style={{
+                            padding: "12px 16px",
+                            textAlign: "left",
+                            fontFamily: "var(--mono)",
+                            fontSize: 9,
+                            letterSpacing: "0.2em",
+                            color: "var(--accent)",
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                          }}>
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {preview.map((p, i) => (
+                        <tr key={p.PlayerID} style={{
+                          borderBottom: "1px solid var(--border)",
+                          background: i % 2 === 0 ? "var(--bg2)" : "var(--bg)",
+                        }}>
+                          <td style={{ padding: "12px 16px", color: "var(--muted)", fontSize: 10 }}>{String(i + 1).padStart(2, "0")}</td>
+                          <td style={{ padding: "12px 16px", color: "var(--text)", fontWeight: 700 }}>{p.Name}</td>
+                          <td style={{ padding: "12px 16px" }}>
+                            <span style={{
+                              fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.1em",
+                              padding: "2px 8px", border: "1px solid var(--border)",
+                              color: "var(--text-dim)",
+                            }}>{p.Position}</span>
+                          </td>
+                          <td style={{ padding: "12px 16px", color: "var(--text-dim)" }}>{p.Age}</td>
+                          <td style={{ padding: "12px 16px", color: "var(--text-dim)" }}>{p.Appearances}</td>
+                          <td style={{ padding: "12px 16px", color: "var(--accent)", fontWeight: 700 }}>{p.Goals}</td>
+                          <td style={{ padding: "12px 16px", color: "var(--text-dim)" }}>{p.Assists}</td>
+                          <td style={{ padding: "12px 16px", color: "var(--text-dim)" }}>
+                            <span style={{ color: "#fbbf24" }}>{p.YellowCards}Y</span>
+                            {p.RedCards > 0 && <span style={{ color: "var(--accent2)", marginLeft: 6 }}>{p.RedCards}R</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {error && (
+                  <div style={{ marginTop: 12, fontFamily: "var(--mono)", fontSize: 11, color: "var(--accent2)", letterSpacing: "0.1em" }}>
+                    ⚠ {error}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Error (no-data state) */}
+            {error && !hasData && (
+              <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--accent2)", letterSpacing: "0.1em" }}>
+                ⚠ {error}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </AuthGuard>
   );

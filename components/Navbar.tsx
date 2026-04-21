@@ -3,9 +3,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const links = [
-  { href: "/upload", label: "Upload" },
-  { href: "/insights", label: "Insights" },
-  { href: "/scout", label: "Scout" },
+  { href: "/upload", label: "Upload", num: "01" },
+  { href: "/insights", label: "Insights", num: "02" },
+  { href: "/scout", label: "Scout", num: "03" },
 ];
 
 export default function Navbar() {
@@ -19,93 +19,133 @@ export default function Navbar() {
 
   return (
     <nav style={{
-      position: 'sticky',
+      position: "sticky",
       top: 0,
       zIndex: 100,
-      background: 'rgba(7,7,7,0.92)',
-      backdropFilter: 'blur(12px)',
-      borderBottom: '1px solid var(--border)',
-      padding: '0 24px',
-      display: 'flex',
-      alignItems: 'center',
-      height: 56,
-      gap: 32,
+      background: "rgba(5,5,5,0.95)",
+      backdropFilter: "blur(20px)",
+      borderBottom: "1px solid var(--border)",
+      display: "flex",
+      alignItems: "stretch",
+      height: 64,
     }}>
+      {/* Left accent bar */}
+      <div style={{ width: 3, background: "var(--accent)", flexShrink: 0 }} />
+
       {/* Wordmark */}
       <Link href="/upload" style={{
-        fontFamily: 'var(--sans)',
-        fontWeight: 700,
-        fontSize: 18,
-        letterSpacing: '-0.02em',
-        color: 'var(--text)',
-        textDecoration: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "0 28px",
+        borderRight: "1px solid var(--border)",
+        textDecoration: "none",
+        flexShrink: 0,
       }}>
-        PITCH
         <span style={{
-          fontFamily: 'var(--mono)',
-          fontSize: 8,
-          letterSpacing: '0.15em',
-          color: 'var(--accent)',
-          border: '1px solid var(--border)',
-          padding: '2px 6px',
+          fontFamily: "var(--sans)",
+          fontWeight: 700,
+          fontSize: 20,
+          letterSpacing: "-0.03em",
+          color: "var(--text)",
         }}>
-          2025/26
+          PITCH
+        </span>
+        <span style={{
+          fontFamily: "var(--mono)",
+          fontSize: 8,
+          letterSpacing: "0.15em",
+          color: "var(--accent)",
+          border: "1px solid var(--border-strong)",
+          padding: "2px 6px",
+          lineHeight: 1.6,
+        }}>
+          25/26
         </span>
       </Link>
 
       {/* Nav links */}
-      <div style={{ display: 'flex', gap: 0, flex: 1 }}>
-        {links.map(({ href, label }) => {
+      <div style={{ display: "flex", flex: 1 }}>
+        {links.map(({ href, label, num }) => {
           const active = pathname === href;
           return (
             <Link key={href} href={href} style={{
-              fontFamily: 'var(--mono)',
-              fontSize: 11,
-              letterSpacing: '0.15em',
-              textTransform: 'uppercase',
-              color: active ? 'var(--accent)' : 'var(--muted)',
-              textDecoration: 'none',
-              padding: '0 16px',
-              height: 56,
-              display: 'flex',
-              alignItems: 'center',
-              borderBottom: active ? '1px solid var(--accent)' : '1px solid transparent',
-              transition: 'color 0.15s',
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "0 24px",
+              textDecoration: "none",
+              borderRight: "1px solid var(--border)",
+              borderBottom: active ? "2px solid var(--accent)" : "2px solid transparent",
+              background: active ? "rgba(57,255,180,0.04)" : "transparent",
+              transition: "all 0.15s",
+              position: "relative",
+              marginBottom: active ? -1 : 0,
             }}
-            onMouseEnter={e => !active && ((e.target as HTMLElement).style.color = 'var(--text-dim)')}
-            onMouseLeave={e => !active && ((e.target as HTMLElement).style.color = 'var(--muted)')}
+            onMouseEnter={e => {
+              if (!active) e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+            }}
+            onMouseLeave={e => {
+              if (!active) e.currentTarget.style.background = "transparent";
+            }}
             >
-              {label}
+              <span style={{
+                fontFamily: "var(--mono)",
+                fontSize: 9,
+                letterSpacing: "0.1em",
+                color: active ? "var(--accent)" : "var(--muted)",
+                opacity: 0.5,
+                marginTop: 1,
+              }}>{num}</span>
+              <span style={{
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: active ? "var(--accent)" : "var(--text-dim)",
+                fontWeight: active ? 700 : 400,
+              }}>
+                {label}
+              </span>
             </Link>
           );
         })}
       </div>
 
+      {/* Live indicator */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 24px", borderLeft: "1px solid var(--border)" }}>
+        <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--accent)", animation: "pulse-glow 2s ease infinite" }} />
+        <span style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.2em", color: "var(--accent)" }}>LIVE</span>
+      </div>
+
       {/* Exit */}
-      <button onClick={handleLogout} style={{
-        fontFamily: 'var(--mono)',
-        fontSize: 10,
-        letterSpacing: '0.15em',
-        color: 'var(--muted)',
-        background: 'transparent',
-        border: '1px solid var(--border)',
-        padding: '6px 14px',
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-      }}
-      onMouseEnter={e => {
-        (e.target as HTMLElement).style.color = 'var(--text)'
-        ;(e.target as HTMLElement).style.borderColor = 'var(--border-strong)'
-      }}
-      onMouseLeave={e => {
-        (e.target as HTMLElement).style.color = 'var(--muted)'
-        ;(e.target as HTMLElement).style.borderColor = 'var(--border)'
-      }}
+      <button
+        onClick={handleLogout}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "0 24px",
+          background: "transparent",
+          border: "none",
+          borderLeft: "1px solid var(--border)",
+          cursor: "pointer",
+          fontFamily: "var(--mono)",
+          fontSize: 10,
+          letterSpacing: "0.2em",
+          color: "var(--muted)",
+          transition: "all 0.15s",
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.color = "var(--accent2)";
+          e.currentTarget.style.background = "rgba(255,61,90,0.06)";
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.color = "var(--muted)";
+          e.currentTarget.style.background = "transparent";
+        }}
       >
-        EXIT
+        <span style={{ fontSize: 14 }}>⏻</span> EXIT
       </button>
     </nav>
   );
