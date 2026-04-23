@@ -5,19 +5,7 @@ import AuthGuard from '@/components/AuthGuard'
 import AIChat from '@/components/AIChat'
 import { useStore } from '@/lib/store'
 
-const LEAGUES_2425 = [
-  { name: 'Premier League', id: 39, flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
-  { name: 'La Liga', id: 140, flag: '🇪🇸' },
-  { name: 'Serie A', id: 135, flag: '🇮🇹' },
-  { name: 'Bundesliga', id: 78, flag: '🇩🇪' },
-  { name: 'Ligue 1', id: 61, flag: '🇫🇷' },
-  { name: 'Primeira Liga', id: 94, flag: '🇵🇹' },
-  { name: 'Eredivisie', id: 88, flag: '🇳🇱' },
-  { name: 'Saudi Pro League', id: 307, flag: '🇸🇦' },
-  { name: 'MLS', id: 253, flag: '🇺🇸' },
-]
-const POSITIONS = ['All', 'Attacker', 'Midfielder', 'Defender', 'Goalkeeper']
-const POSITIONS_2526 = ['All', 'F', 'M', 'D']
+const POSITIONS = ['All', 'F', 'M', 'D']
 
 function effColor(v: number) {
   if (v >= 0.7) return '#39ffb4'
@@ -71,7 +59,6 @@ function scoutRoleStats(p: any) {
 export default function ScoutPage() {
   const { players: myPlayers } = useStore()
   const [season, setSeason] = useState<'2425' | '2526'>('2526')
-  const [league, setLeague] = useState(39)
   const [position, setPosition] = useState('All')
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -87,7 +74,7 @@ export default function ScoutPage() {
       if (season === '2526') {
         url = `/api/scout-2526?position=${position}`
       } else {
-        url = `/api/scout?league=${league}&season=2024&position=${position}`
+        url = `/api/scout-2425?position=${position}`
       }
       const res = await fetch(url)
       const data = await res.json()
@@ -190,21 +177,10 @@ export default function ScoutPage() {
         {/* Controls */}
         <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg2)', padding: '20px 40px' }}>
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            {season === '2425' && (
-              <div style={{ flex: '1 1 200px' }}>
-                <label style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--muted)', display: 'block', marginBottom: 6 }}>LEAGUE</label>
-                <select value={league} onChange={e => setLeague(Number(e.target.value))} style={selectStyle}>
-                  {LEAGUES_2425.map(l => (
-                    <option key={l.id} value={l.id}>{l.flag} {l.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
             <div style={{ flex: '1 1 160px' }}>
               <label style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--muted)', display: 'block', marginBottom: 6 }}>POSITION</label>
               <select value={position} onChange={e => setPosition(e.target.value)} style={selectStyle}>
-                {(season === '2526' ? POSITIONS_2526 : POSITIONS).map(p => (
+                {POSITIONS.map(p => (
                   <option key={p} value={p}>{p === 'All' ? 'ALL POSITIONS' : p.toUpperCase()}</option>
                 ))}
               </select>
@@ -233,11 +209,12 @@ export default function ScoutPage() {
               {loading ? 'SEARCHING...' : '⚡ SEARCH'}
             </button>
 
-            {season === '2526' && (
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ color: 'var(--accent)' }}>●</span> PL 2025/26 · UNDERSTAT · LIVE
-              </div>
-            )}
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}>
+              {season === '2526'
+                ? <><span style={{ color: 'var(--accent)' }}>●</span> PL 2025/26 · UNDERSTAT · LIVE</>
+                : <><span style={{ color: 'var(--muted)' }}>◆</span> PL 2024/25 · UNDERSTAT · SUPABASE</>
+              }
+            </div>
           </div>
         </div>
 
