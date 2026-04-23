@@ -9,7 +9,8 @@ const supabase = createClient(
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const position = searchParams.get('position') || 'All'
-  const team = searchParams.get('team') || 'All'
+  const team     = searchParams.get('team')     || 'All'
+  const league   = searchParams.get('league')   || 'All'
 
   let query = supabase
     .from('players_2526')
@@ -21,6 +22,9 @@ export async function GET(request: NextRequest) {
   }
   if (team !== 'All') {
     query = query.eq('team', team)
+  }
+  if (league !== 'All') {
+    query = query.eq('league', league)
   }
 
   const { data, error } = await query

@@ -6,6 +6,7 @@ import AIChat from '@/components/AIChat'
 import { useStore } from '@/lib/store'
 
 const POSITIONS = ['All', 'F', 'M', 'D']
+const SCOUT_LEAGUES = ['All', 'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1']
 
 function effColor(v: number) {
   if (v >= 0.7) return '#39ffb4'
@@ -60,6 +61,7 @@ export default function ScoutPage() {
   const { players: myPlayers } = useStore()
   const [season, setSeason] = useState<'2425' | '2526'>('2526')
   const [position, setPosition] = useState('All')
+  const [league, setLeague] = useState('All')
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -72,9 +74,9 @@ export default function ScoutPage() {
     try {
       let url = ''
       if (season === '2526') {
-        url = `/api/scout-2526?position=${position}`
+        url = `/api/scout-2526?position=${position}&league=${league}`
       } else {
-        url = `/api/scout-2425?position=${position}`
+        url = `/api/scout-2425?position=${position}&league=${league}`
       }
       const res = await fetch(url)
       const data = await res.json()
@@ -142,7 +144,7 @@ export default function ScoutPage() {
               ].map(({ val, label, live }) => (
                 <button
                   key={val}
-                  onClick={() => { setSeason(val as any); setResults([]); setSearched(false) }}
+                  onClick={() => { setSeason(val as any); setResults([]); setSearched(false); setLeague('All') }}
                   style={{
                     fontFamily: 'var(--mono)',
                     fontSize: 10,
@@ -177,6 +179,15 @@ export default function ScoutPage() {
         {/* Controls */}
         <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg2)', padding: '20px 40px' }}>
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 180px' }}>
+              <label style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--muted)', display: 'block', marginBottom: 6 }}>LEAGUE</label>
+              <select value={league} onChange={e => setLeague(e.target.value)} style={selectStyle}>
+                {SCOUT_LEAGUES.map(l => (
+                  <option key={l} value={l}>{l === 'All' ? 'ALL LEAGUES' : l}</option>
+                ))}
+              </select>
+            </div>
+
             <div style={{ flex: '1 1 160px' }}>
               <label style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.2em', color: 'var(--muted)', display: 'block', marginBottom: 6 }}>POSITION</label>
               <select value={position} onChange={e => setPosition(e.target.value)} style={selectStyle}>
@@ -211,8 +222,8 @@ export default function ScoutPage() {
 
             <div style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}>
               {season === '2526'
-                ? <><span style={{ color: 'var(--accent)' }}>●</span> PL 2025/26 · UNDERSTAT · LIVE</>
-                : <><span style={{ color: 'var(--muted)' }}>◆</span> PL 2024/25 · UNDERSTAT · SUPABASE</>
+                ? <><span style={{ color: 'var(--accent)' }}>●</span> 2025/26 · UNDERSTAT · LIVE</>
+                : <><span style={{ color: 'var(--muted)' }}>◆</span> 2024/25 · UNDERSTAT · SUPABASE</>
               }
             </div>
           </div>
