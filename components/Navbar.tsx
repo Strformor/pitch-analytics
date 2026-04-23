@@ -52,17 +52,6 @@ export default function Navbar() {
         }}>
           PITCH
         </span>
-        <span style={{
-          fontFamily: "var(--mono)",
-          fontSize: 8,
-          letterSpacing: "0.15em",
-          color: "var(--accent)",
-          border: "1px solid var(--border-strong)",
-          padding: "2px 6px",
-          lineHeight: 1.6,
-        }}>
-          25/26
-        </span>
       </Link>
 
       {/* Nav links */}
