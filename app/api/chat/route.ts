@@ -89,7 +89,9 @@ Rules:
 
     const reply = response.content[0].type === 'text' ? response.content[0].text : ''
     return NextResponse.json({ reply })
-  } catch {
-    return NextResponse.json({ error: 'Scout unavailable. Try again shortly.' }, { status: 500 })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[chat] Anthropic error:', msg)
+    return NextResponse.json({ error: `Scout error: ${msg}` }, { status: 500 })
   }
 }
