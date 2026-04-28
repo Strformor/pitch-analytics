@@ -53,8 +53,10 @@ export async function POST(request: NextRequest) {
 
     const mySquadContext = safePlayers.length
       ? `MY CURRENT SQUAD:\n${safePlayers.map((p: any) =>
-          `- ${String(p.Name).slice(0,40)} | ${p.Position} | Age:${p.Age} | G:${p.Goals} A:${p.Assists} | Eff:${
-            p.MinutesPlayed > 0 ? (((p.Goals + p.Assists) / p.MinutesPlayed) * 90).toFixed(2) : '0.00'
+          `- ${String(p.name ?? p.Name ?? '').slice(0,40)} | ${p.position ?? p.Position} | G:${p.goals ?? p.Goals} A:${p.assists ?? p.Assists} | Eff:${
+            (p.minutes ?? p.MinutesPlayed ?? 0) > 0
+              ? ((((p.goals ?? p.Goals ?? 0) + (p.assists ?? p.Assists ?? 0)) / (p.minutes ?? p.MinutesPlayed)) * 90).toFixed(2)
+              : '0.00'
           } G+A/90`
         ).join('\n')}`
       : 'No squad uploaded yet.'
@@ -88,7 +90,6 @@ Rules:
     const reply = response.content[0].type === 'text' ? response.content[0].text : ''
     return NextResponse.json({ reply })
   } catch {
-    // Never leak internal error details to the client
     return NextResponse.json({ error: 'Scout unavailable. Try again shortly.' }, { status: 500 })
   }
 }

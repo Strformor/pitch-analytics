@@ -11,11 +11,11 @@ async function apiFetch(url: string): Promise<any> {
 
 // ── Position normaliser ──────────────────────────────────────────────────────
 export function mapPosition(pos: string): string {
-  const p = (pos || '').toUpperCase()
-  if (p === 'G' || p === 'GK' || p.includes('GOALKEEPER')) return 'GK'
-  if (p === 'D' || p.includes('DEFENDER'))                  return 'D'
-  if (p === 'M' || p.includes('MIDFIELDER'))                return 'M'
-  return 'F' // Forward / Attacker / default
+  const p = (pos || '').toUpperCase().trim()
+  if (['GK', 'G', 'POR', 'PT', 'GOA'].includes(p) || p.includes('GOALKEEPER') || p.includes('PORTERO')) return 'GK'
+  if (['D', 'CB', 'LB', 'RB', 'WB', 'LWB', 'RWB', 'SW', 'DC', 'DL', 'DR', 'DEF'].includes(p) || p.includes('DEFENDER') || p.includes('BACK')) return 'D'
+  if (['M', 'CM', 'DM', 'AM', 'CDM', 'CAM', 'LM', 'RM', 'MC', 'ML', 'MR', 'DMC', 'AMC', 'AML', 'AMR', 'MID'].includes(p) || p.includes('MIDFIELDER') || p.includes('MIDFIELD')) return 'M'
+  return 'F'
 }
 
 function toNum(val: any): number {
@@ -80,23 +80,31 @@ export function buildPlayerRecord(
   const stats = p.club_league_statistics?.club?.[0] ?? {}
 
   return {
-    id:           toNum(p.id),
-    name:         p.name ?? '',
-    position:     mapPosition(p.position ?? ''),
-    age:          toNum(p.age) || null,
-    nationality:  p.nationality ?? null,
-    team:         stats.team_name   ?? fallbackTeam,
-    league:       stats.league      ?? fallbackLeague,
-    goals:        toNum(stats.goals),
-    assists:      toNum(stats.assists),
-    minutes:      toNum(stats.minutes_played),
-    appearances:  toNum(stats.appearances),
-    xg:           null,
-    xa:           null,
-    xg90:         null,
-    xa90:         null,
-    photo:        null,
-    injured:      injuredIds.has(String(toNum(p.id))),
+    id:               toNum(p.id),
+    name:             p.name ?? '',
+    position:         mapPosition(p.position ?? ''),
+    age:              toNum(p.age) || null,
+    nationality:      p.nationality ?? null,
+    team:             stats.team_name   ?? fallbackTeam,
+    league:           stats.league      ?? fallbackLeague,
+    goals:            toNum(stats.goals),
+    assists:          toNum(stats.assists),
+    minutes:          toNum(stats.minutes_played),
+    appearances:      toNum(stats.appearances),
+    xg:               null,
+    xa:               null,
+    xg90:             null,
+    xa90:             null,
+    photo:            null,
+    injured:          injuredIds.has(String(toNum(p.id))),
+    // Defender metrics
+    fouls_committed:  toNum(stats.fouls_committed) || null,
+    challenges_won:   toNum(stats.duels_won ?? stats.tackles_won ?? stats.challenges_won) || null,
+    key_passes:       toNum(stats.key_passes ?? stats.chances_created) || null,
+    // Goalkeeper metrics
+    shots_saved:      toNum(stats.saves ?? stats.shots_saved) || null,
+    pass_accuracy:    stats.pass_accuracy ?? stats.pass_success ?? null,
+    clean_sheets:     toNum(stats.clean_sheets) || null,
   }
 }
 

@@ -36,13 +36,31 @@ export default function AIChat({ scoutedPlayers }: { scoutedPlayers?: any[] }) {
     setMessages(prev => [...prev, { role: 'user', content: msg }])
     setLoading(true)
     try {
+      const slimScouted = (scoutedPlayers || []).slice(0, 80).map((p: any) => ({
+        name:       p.name,
+        team:       p.team,
+        position:   p.position,
+        goals:      p.goals,
+        assists:    p.assists,
+        minutes:    p.minutes,
+        efficiency: p.efficiency,
+        xg:         p.xg,
+        xa:         p.xa,
+      }))
+      const slimMyPlayers = myPlayers.slice(0, 30).map((p: any) => ({
+        name:     p.Name,
+        position: p.Position,
+        goals:    p.Goals,
+        assists:  p.Assists,
+        minutes:  p.MinutesPlayed,
+      }))
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: msg,
-          myPlayers,
-          scoutedPlayers: scoutedPlayers || [],
+          myPlayers:      slimMyPlayers,
+          scoutedPlayers: slimScouted,
         }),
       })
       const data = await res.json()

@@ -5,7 +5,7 @@ import AuthGuard from '@/components/AuthGuard'
 import AIChat from '@/components/AIChat'
 import { useStore } from '@/lib/store'
 
-const POSITIONS = ['All', 'F', 'M', 'D']
+const POSITIONS = ['All', 'F', 'M', 'D', 'GK']
 
 function effColor(v: number) {
   if (v >= 0.7) return '#39ffb4'
@@ -32,11 +32,20 @@ function posColor(pos: string) {
 function scoutRoleStats(p: any) {
   const pos = (p.position || '').toLowerCase()
 
+  if (pos === 'gk' || pos.includes('goalkeeper')) {
+    return [
+      { label: 'SAVED',    val: p.shots_saved  ?? '—' },
+      { label: 'CLEANSH',  val: p.clean_sheets ?? '—' },
+      { label: 'PASS%',    val: p.pass_accuracy != null ? `${p.pass_accuracy}%` : '—' },
+      { label: 'APPS',     val: p.appearances ?? p.apps ?? '—' },
+    ]
+  }
   if (pos === 'd' || pos.includes('defender')) {
     return [
-      { label: 'APPS',    val: p.appearances ?? p.apps ?? '—' },
-      { label: 'G+A',     val: (p.goals ?? 0) + (p.assists ?? 0) },
-      { label: 'MINS',    val: p.minutes },
+      { label: 'FOULS',    val: p.fouls_committed ?? '—' },
+      { label: 'DUEL W',   val: p.challenges_won  ?? '—' },
+      { label: 'KEY PASS', val: p.key_passes      ?? '—' },
+      { label: 'APPS',     val: p.appearances ?? p.apps ?? '—' },
     ]
   }
   if (pos === 'm' || pos.includes('midfielder')) {

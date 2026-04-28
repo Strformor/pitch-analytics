@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     .order('goals', { ascending: false })
 
   if (position !== 'All') {
-    query = query.eq('position', position.charAt(0).toUpperCase())
+    query = query.eq('position', position.toUpperCase())
   }
   if (team !== 'All') {
     query = query.eq('team', team)

@@ -42,18 +42,18 @@ function roleStats(p: any) {
 
   if (pos === 'GK') {
     return [
-      { label: 'APPS',   val: p.apps,                                       key: false },
-      { label: 'MINS',   val: p.minutes?.toLocaleString(),                  key: false },
-      { label: 'G+A',    val: (p.goals || 0) + (p.assists || 0),            key: true  },
-      { label: 'xG',     val: p.xg,                                         key: false },
+      { label: 'SAVED',    val: p.shots_saved  ?? '—', key: true  },
+      { label: 'CLEANSH',  val: p.clean_sheets ?? '—', key: true  },
+      { label: 'PASS%',    val: p.pass_accuracy != null ? `${p.pass_accuracy}%` : '—', key: false },
+      { label: 'APPS',     val: p.apps,                key: false },
     ]
   }
   if (pos === 'D') {
     return [
-      { label: 'G+A',     val: (p.goals || 0) + (p.assists || 0),  key: true  },
-      { label: 'APPS',    val: p.apps,                              key: false },
-      { label: 'xG',      val: p.xg,                               key: false },
-      { label: 'xA',      val: p.xa,                               key: false },
+      { label: 'FOULS',    val: p.fouls_committed ?? '—', key: false },
+      { label: 'DUEL W',   val: p.challenges_won  ?? '—', key: true  },
+      { label: 'KEY PASS', val: p.key_passes      ?? '—', key: true  },
+      { label: 'APPS',     val: p.apps,                   key: false },
     ]
   }
   if (pos === 'M') {
