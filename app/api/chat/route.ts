@@ -67,31 +67,29 @@ export async function POST(request: NextRequest) {
         ).join('\n')}`
       : 'No scouted players loaded.'
 
-    const systemPrompt = `You are an expert football scout and analyst for PITCH, a professional analytics platform. Be direct, data-driven, and concise.
+    const systemPrompt = `You are an expert football scout and analyst for PITCH. Be direct, data-driven, and concise.
 
 ${mySquadContext}
 
 ${scoutContext}
 
 Rules:
-- Always cite specific stats (G+A/90, goals, assists, xG)
-- 3-5 sentences max per response
-- Be bold with recommendations — no hedging
-- Use football analytics language (xG, pressing, etc.)
-- If comparing players, declare a clear winner`
+- Plain English only. No bullet points, no asterisks, no dashes, no markdown, no special characters.
+- Cite specific stats inline (G+A per 90, goals, assists, xG) as plain text.
+- Maximum 400 characters total per response. Be ruthlessly brief.
+- Bold recommendations, no hedging.
+- If comparing players, declare a clear winner in plain sentences.`
 
     const response = await client.messages.create({
       model:      'claude-haiku-4-5',  // haiku: 50× cheaper than opus, fast, sufficient for this use case
-      max_tokens: 300,
+      max_tokens: 150,
       system:     systemPrompt,
       messages:   [{ role: 'user', content: safeMessage }],
     })
 
     const reply = response.content[0].type === 'text' ? response.content[0].text : ''
     return NextResponse.json({ reply })
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error('[chat] Anthropic error:', msg)
-    return NextResponse.json({ error: `Scout error: ${msg}` }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Scout unavailable. Try again shortly.' }, { status: 500 })
   }
 }
