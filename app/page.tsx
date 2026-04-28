@@ -1,5 +1,5 @@
 "use client";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const TICKER_ITEMS = [
@@ -13,6 +13,12 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Auto-login: set auth token and redirect immediately on mount
+  useEffect(() => {
+    localStorage.setItem("sa_auth", "1");
+    router.push("/upload");
+  }, [router]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();

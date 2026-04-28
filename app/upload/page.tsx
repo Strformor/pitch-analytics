@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, DragEvent, ChangeEvent } from "react";
+import { useRef, useState, useEffect, DragEvent, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import Papa from "papaparse";
 import Navbar from "@/components/Navbar";
@@ -9,13 +9,50 @@ import { Player } from "@/lib/types";
 
 export default function UploadPage() {
   const router = useRouter();
-  const { setPlayers, setFileName } = useStore();
+  const { players: existingPlayers, setPlayers, setFileName } = useStore();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState<Player[]>([]);
   const [currentFile, setCurrentFile] = useState("");
   const [totalPlayers, setTotalPlayers] = useState(0);
+
+  // Auto-load Space Cowboys squad if no squad has been uploaded yet
+  useEffect(() => {
+    if (existingPlayers.length > 0) return; // user already has data
+    fetch("/default-squad.csv")
+      .then(res => res.text())
+      .then(csvText => {
+        Papa.parse<Record<string, string>>(csvText, {
+          header: true,
+          skipEmptyLines: true,
+          complete(results) {
+            const rows = results.data.map((r) => ({
+              PlayerID:     Number(r.PlayerID),
+              Name:         r.Name,
+              Position:     r.Position,
+              Age:          Number(r.Age),
+              Nationality:  r.Nationality,
+              Appearances:  Number(r.Appearances),
+              Goals:        Number(r.Goals),
+              Assists:      Number(r.Assists),
+              YellowCards:  Number(r.YellowCards),
+              RedCards:     Number(r.RedCards),
+              MinutesPlayed: Number(r.MinutesPlayed),
+            })) as Player[];
+            if (rows.length && rows[0].Name) {
+              setPlayers(rows);
+              setFileName("space_cowboys_fc_squad.csv");
+              setCurrentFile("space_cowboys_fc_squad.csv");
+              setTotalPlayers(rows.length);
+              setPreview(rows.slice(0, 8));
+            }
+          },
+        });
+      })
+      .catch(() => { /* silently skip if fetch fails */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function parseFile(file: File) {
     setError("");
