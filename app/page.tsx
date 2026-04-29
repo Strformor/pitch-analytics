@@ -1,5 +1,5 @@
 "use client";
-import { useState, FormEvent, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const TICKER_ITEMS = [
@@ -9,28 +9,13 @@ const TICKER_ITEMS = [
 ];
 
 export default function LoginPage() {
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Auto-login: set auth token and redirect immediately on mount
-  useEffect(() => {
-    localStorage.setItem("sa_auth", "1");
-    router.push("/upload");
-  }, [router]);
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  function handleAccess() {
     setLoading(true);
-    setError("");
-    if (password === "OPS123") {
-      localStorage.setItem("sa_auth", "1");
-      router.push("/upload");
-    } else {
-      setError("ACCESS DENIED");
-      setLoading(false);
-    }
+    localStorage.setItem("sa_auth", "1");
+    setTimeout(() => router.push("/upload"), 800);
   }
 
   return (
@@ -105,100 +90,59 @@ export default function LoginPage() {
           <div style={{ position: "absolute", left: 0, top: "50%", width: 3, height: 80, background: "var(--accent)", transform: "translateY(-50%)" }} />
         </div>
 
-        {/* RIGHT — Auth form */}
+        {/* RIGHT — Access panel */}
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "60px 48px" }}>
           <div style={{ width: "100%", maxWidth: 360 }}>
 
-            {/* Form header */}
-            <div style={{ marginBottom: 32 }}>
+            {/* Panel header */}
+            <div style={{ marginBottom: 48 }}>
               <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.3em", color: "var(--muted)", marginBottom: 8 }}>
-                — RESTRICTED ACCESS
+                — FOOTBALL INTELLIGENCE
               </div>
               <div style={{ fontFamily: "var(--sans)", fontWeight: 700, fontSize: 28, letterSpacing: "-0.02em", color: "var(--text)" }}>
-                Authenticate
+                Ready to Scout
+              </div>
+              <div style={{ marginTop: 12, fontFamily: "var(--mono)", fontSize: 11, letterSpacing: "0.1em", color: "var(--text-dim)", lineHeight: 1.8 }}>
+                Live data across 9 leagues.<br />
+                AI-powered recommendations.<br />
+                Built for serious analysts.
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {/* Label */}
-              <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: "0.2em", color: "var(--accent)", marginBottom: 4 }}>
-                ACCESS CODE
-              </div>
-
-              {/* Password input */}
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="········"
-                autoFocus
-                style={{
-                  width: "100%",
-                  padding: "16px 20px",
-                  fontSize: 18,
-                  letterSpacing: "0.4em",
-                  background: "var(--bg2)",
-                  border: "1px solid var(--border)",
-                  borderLeft: "3px solid var(--accent)",
-                  color: "var(--text)",
-                  fontFamily: "var(--mono)",
-                  outline: "none",
-                  transition: "all 0.2s",
-                }}
-                onFocus={e => {
-                  e.target.style.borderColor = "var(--accent)";
-                  e.target.style.boxShadow = "0 0 0 3px var(--accent-dim)";
-                }}
-                onBlur={e => {
-                  e.target.style.borderColor = "var(--border)";
-                  e.target.style.borderLeftColor = "var(--accent)";
-                  e.target.style.boxShadow = "none";
-                }}
-              />
-
-              {/* Error */}
-              {error && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--mono)", fontSize: 11, color: "var(--accent2)", letterSpacing: "0.1em" }}>
-                  <span style={{ fontSize: 16 }}>✕</span> {error}
-                </div>
+            {/* Access button */}
+            <button
+              onClick={handleAccess}
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "22px",
+                background: loading ? "var(--bg3)" : "var(--accent)",
+                color: loading ? "var(--muted)" : "#050505",
+                fontFamily: "var(--mono)",
+                fontWeight: 700,
+                fontSize: 15,
+                letterSpacing: "0.3em",
+                border: "none",
+                cursor: loading ? "not-allowed" : "pointer",
+                transition: "all 0.2s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 14,
+              }}
+              onMouseEnter={e => {
+                if (!loading) (e.currentTarget as HTMLElement).style.boxShadow = "0 0 48px var(--accent-glow)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.boxShadow = "none";
+              }}
+            >
+              {loading ? (
+                <>LOADING<span className="blink">_</span></>
+              ) : (
+                <>ACCESS <span style={{ fontSize: 20 }}>→</span></>
               )}
-
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  marginTop: 8,
-                  width: "100%",
-                  padding: "18px",
-                  background: loading ? "var(--bg3)" : "var(--accent)",
-                  color: loading ? "var(--muted)" : "#050505",
-                  fontFamily: "var(--mono)",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  letterSpacing: "0.2em",
-                  border: "none",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  transition: "all 0.2s",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                }}
-                onMouseEnter={e => {
-                  if (!loading) (e.currentTarget as HTMLElement).style.boxShadow = "0 0 40px var(--accent-glow)";
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                }}
-              >
-                {loading ? (
-                  <>VERIFYING<span className="blink">_</span></>
-                ) : (
-                  <>ENTER SYSTEM <span style={{ fontSize: 18 }}>→</span></>
-                )}
-              </button>
-            </form>
+            </button>
 
             {/* Footer note */}
             <div style={{ marginTop: 32, fontFamily: "var(--mono)", fontSize: 9, color: "var(--muted)", letterSpacing: "0.15em", lineHeight: 2, borderTop: "1px solid var(--border)", paddingTop: 20 }}>
